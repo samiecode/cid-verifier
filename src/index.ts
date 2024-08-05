@@ -44,7 +44,7 @@ app.addInspectHandler(async ({ payload }) => {
 
     let response;
     switch (route) {
-        case "cidVerfiy":
+        case "cidVerify":
             response = JSON.stringify({cidVerify})
             break;
         case "totalVerification":
