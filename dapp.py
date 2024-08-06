@@ -4,7 +4,6 @@ import requests
 import json
 from multiformats import CID
 from typing import Any, List
-from cartesi_wallet.util import hex_to_str, str_to_hex
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
@@ -14,6 +13,9 @@ logger.info(f"HTTP rollup_server url is {rollup_server}")
 
 cid_verify: List[dict[str,Any]] = []
 total_verification = 0
+
+def str_to_hex(str):
+    return "0x" + str.encode("utf-8").hex()
 
 def handle_advance(data):
     logger.info(f"Received advance request data {data}")
@@ -41,7 +43,10 @@ def handle_advance(data):
         cid = CID.decode(payload_str)
         logger.info(f"CID Verify ::: {cid}")
         
-        response = requests.post(rollup_server + "/notice", json={"payload": str_to_hex(f"CID is valid: {cid}")})
+        msg = str_to_hex(f"CID is valid: {cid}")
+        logger.info(f"Msg :::: {msg}" )
+
+        response = requests.post(rollup_server + "/notice", json={"payload": msg})
         logger.info(f"Received notice status {response.status_code} body {response.content}")
 
         cid_verify.append({"sender": sender, "cid": str(cid)})
@@ -51,8 +56,10 @@ def handle_advance(data):
         status = "reject"
         msg = f"Invalid CID {str(e)}"
 
+        logger.info(f"Msg :::: {msg}" )
+
         logger.error(msg)
-        response = requests.post(rollup_server + "/report", json={"payload": str_to_hex(msg)})
+        response = requests.post(rollup_server + "/report", json={"payload": msg})
         logger.info(f"Received report status {response.status_code} body {response.content}")
     
 
