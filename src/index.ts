@@ -16,7 +16,10 @@ app.addAdvanceHandler(async ({metadata, payload}) => {
 	const sender = getAddress(metadata.msg_sender);
 
 	try {
-		const jsonPayload = JSON.stringify(hexToString(payload));
+		const jsonPayloadString = hexToString(payload);
+		console.log("payload: ", jsonPayloadString )
+
+		const jsonPayload = JSON.parse(jsonPayloadString)
 
 		const cid = CID.parse(jsonPayload);
 
