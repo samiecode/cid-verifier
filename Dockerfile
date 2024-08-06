@@ -24,8 +24,6 @@ ENV PATH="/opt/cartesi/bin:${PATH}"
 WORKDIR /opt/cartesi/dapp
 COPY ./requirements.txt .
 
-RUN pip install eth-utils 
-
 RUN <<EOF
 set -e
 pip install -r requirements.txt --no-cache
