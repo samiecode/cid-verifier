@@ -28,8 +28,6 @@ def handle_advance(data):
 
     sender = metadata['msg_sender']
 
-    logger.info(f"Payload:: {payload}")
-
     status = "accept"
 
     try:
@@ -53,7 +51,7 @@ def handle_advance(data):
 
     except Exception as e:
         status = "reject"
-        
+
         response = requests.post(rollup_server + "/report", json={"payload": str_to_hex(f"Invalid CID {str(e)}")})
         logger.info(f"Received report status {response.status_code} body {response.content}")
     
@@ -75,7 +73,9 @@ def handle_inspect(data):
         msg = "Invalid route"
 
     response = requests.post(rollup_server + "/report", json={"payload": str_to_hex(msg)})
-    logger.info(f"Received report status {response.status_code} body {response.content}") 
+    logger.info(f"Received report status {response.status_code} body {response.content}")
+
+    return "accept" 
 
 handlers = {
     "advance_state": handle_advance,
