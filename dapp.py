@@ -16,6 +16,8 @@ total_verification = 0
 
 def str_to_hex(str):
     return "0x" + str.encode("utf-8").hex()
+def hex_to_str(hex):
+    return bytes.fromhex(hex[2:]).decode("utf-8")
 
 def handle_advance(data):
     logger.info(f"Received advance request data {data}")
@@ -38,15 +40,12 @@ def handle_advance(data):
         else:
             raise ValueError("Payload must be a string")
 
-        payload_str = bytes.fromhex(payload).decode('utf-8')
+        payload_str = hex_to_str(payload)
         
         cid = CID.decode(payload_str)
         logger.info(f"CID Verify ::: {cid}")
         
-        msg = str_to_hex(f"CID is valid: {cid}")
-        logger.info(f"Msg :::: {msg}" )
-
-        response = requests.post(rollup_server + "/notice", json={"payload": msg})
+        response = requests.post(rollup_server + "/notice", json={"payload": str_to_hex(f"CID is valid: {cid}")})
         logger.info(f"Received notice status {response.status_code} body {response.content}")
 
         cid_verify.append({"sender": sender, "cid": str(cid)})
@@ -54,12 +53,8 @@ def handle_advance(data):
 
     except Exception as e:
         status = "reject"
-        msg = f"Invalid CID {str(e)}"
-
-        logger.info(f"Msg :::: {msg}" )
-
-        logger.error(msg)
-        response = requests.post(rollup_server + "/report", json={"payload": msg})
+        
+        response = requests.post(rollup_server + "/report", json={"payload": str_to_hex(f"Invalid CID {str(e)}")})
         logger.info(f"Received report status {response.status_code} body {response.content}")
     
 
@@ -70,13 +65,12 @@ def handle_inspect(data):
 
     payload = data['payload']
 
-    route = bytes.fromhex(payload).decode('utf-8')
-
+    route = hex_to_str(payload)
+    
     if route == "cidVerify":
-        msg = json.dump({"cidVerify": cid_verify})
-        
+        msg = json.dumps({"cidVerify": cid_verify})   
     elif route == "totalVerification":
-        msg = json.dump({"total_verification": total_verification})
+        msg = json.dumps({"total_verification": total_verification})
     else:
         msg = "Invalid route"
 
@@ -98,5 +92,5 @@ while True:
         rollup_request = response.json()
         handler = handlers[rollup_request["request_type"]]
         result = handler(rollup_request["data"])
-        response = requests.post(rollup_server + "/report", json={"payload": result})
+        response = requests.post(rollup_server + "/report", json={"payload": str_to_hex(result)})
         logger.info(f"Received report status {response.status_code}")
